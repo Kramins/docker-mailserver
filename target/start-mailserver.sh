@@ -1548,6 +1548,9 @@ function _setup_security_stack() {
 	if [ -f /tmp/docker-mailserver/amavis.cf ]; then
 		cp /tmp/docker-mailserver/amavis.cf /etc/amavis/conf.d/50-user
 	fi
+	
+	notify 'inf' 'Setting permissions'
+	chmod -R 400 /etc/amavis
 }
 
 function _setup_logrotate() {
@@ -1661,7 +1664,10 @@ function fix() {
 
 function _fix_var_mail_permissions() {
 	notify 'task' 'Checking /var/mail permissions'
-
+	if [[ "$SKIP_PERMISSIONS_CHECK" -eq 1 ]]; then
+		notify 'inf' 'Skipping /var/mail permissions'
+		return 0;
+	fi
 	# Fix permissions, but skip this if 3 levels deep the user id is already set
 	if [ `find /var/mail -maxdepth 3 -a \( \! -user 5000 -o \! -group 5000 \) | grep -c .` != 0 ]; then
 		notify 'inf' "Fixing /var/mail permissions"
